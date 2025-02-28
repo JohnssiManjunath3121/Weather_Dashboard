@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        #container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 80%;
+        }
+        /* Changed the sidebar container */
+        #sidebar {
+            width: 20px;
+            top: 0;
+            right: 0;
+            width: 320px; /* Slightly wider for better spacing */
+            height: 100vh;
+            background: linear-gradient(to bottom, #f5f5f5, #e0e0e0); /* Soft gradient */
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            border-left: 3px solid #007bff; /* Blue accent border */
+        }
+        /* Changed the heading colour and added text shadow container */
+        #sidebar h3 {
+            margin: 10px 0;
+            font-size: 22px;
+            color: #0033cc;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 51, 204, 0.3);
+        }
+
+        /* Changed the forcaste container view */
+        .forecast {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        .forecast img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .forecast span {
+            font-size: 14px;
+        }
+        #recent-searches {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            position: absolute;
+            background: white;
+            width: calc(100% - 69px);
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            top: 33px;
+        }
+        #recent-searches div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        #recent-searches div:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* code for search container class */
+        .search-container {
+            position: relative;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .search-container input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        }
+
+        .search-container button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+        }
+
+        .search-container button:hover {
+        background: #0056b3;
+        }
+
+        /* Subheadings */
+        .subheading {
+        font-size: 18px;
+        font-weight: bold;
+        color: #0033cc;
+        margin-top: 10px;
+        text-shadow: 1px 1px 2px rgba(0, 51, 204, 0.3);
+        }
+        /* Weather Icons */
+        .weather-icon {
+        width: 50px;
+        height: 50px;
+        filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Add subtle animations for forcaste */
+        @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        }
+
+        .forecast {
+        animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /*code for the view selector */
+
+        .view-selector {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 10px 15px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #333;
+        z-index: 1000;
+        border: 1px solid #ccc;
+        }
+
+        /* Radio Button Styling */
+        .view-selector input[type="radio"] {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #007bff;
+        border-radius: 50%;
+        margin-right: 8px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+        }
+
+        .view-selector input[type="radio"]:checked {
+        background-color: #007bff;
+        border: 5px solid white;
+        box-shadow: 0 0 5px #007bff;
+        }
+
+        /* Hover Effect */
+        .view-selector label {
+        display: flex;
+        align-items: center;
+        padding: 5px 0;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out;
+        }
+
+        .view-selector label:hover {
+        background: rgba(0, 123, 255, 0.1);
+        border-radius: 5px;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        }
+
+        .view-selector {
+        animation: fadeIn 0.3s ease-in-out;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Map Section -->
+        <div id="map"></div>
+
+        <!-- Map View Selector -->
+        <div id="map-selector" class="view-selector">
+            <label>
+                <input type="radio" name="map-view" value="street" checked onclick="changeMapView('street')"> Street View
+            </label>
+            <label>
+                <input type="radio" name="map-view" value="satellite" onclick="changeMapView('satellite')"> Satellite View
+            </label>
+            <label>
+                <input type="radio" name="map-view" value="terrain" onclick="changeMapView('terrain')"> Terrain View
+            </label>
+        </div>
+
+        <!-- Sidebar Section -->
+        <div id="sidebar">
+            <div class="search-container">
+                <input type="text" id="city" class="city" placeholder="Enter city name" onfocus="fetchRecentSearches()" />
+                <button onclick="searchCity()">Search</button>
+                <div id="recent-searches"></div>
+            </div>
+            <div id="weather-details">
+                <h3>Current Weather</h3>
+                <p id="weather-description"></p>
+                <p id="temperature"></p>
+                <p id="humidity"></p>
+            </div>
+            <div id="hourly-forecast">
+                <h3>Hourly Forecast</h3>
+            </div>
+            <div id="six-day-forecast">
+                <h3>6-Day Forecast</h3>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([20, 0], 2); // World map view
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+        
+        // Tile layers
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        });
+
+        const satelliteLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Maps'
+        });
+
+        const terrainLayer = L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Terrain'
+        });
+
+    // Add default layer (Street View)
+    streetLayer.addTo(map);
+
+    // Layer control
+    const baseMaps = {
+        "Street View": streetLayer,
+        "Satellite View": satelliteLayer,
+        "Terrain View": terrainLayer
+    };
+
+    // Function to switch layers based on radio button selection
+    function changeMapView(viewType) {
+        // Remove all layers
+        for (let key in baseMaps) {
+            map.removeLayer(baseMaps[key]);
+        }
+        // Add selected layer
+        baseMaps[viewType].addTo(map);
+    }
+
+    // Add event listeners to radio buttons
+    document.querySelectorAll('input[name="map-view"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            changeMapView(this.value);
+        });
+    });
+
+    L.control.layers(baseMaps).addTo(map);
+    
+        // Fetch recent searches and populate the dropdown
+        function fetchRecentSearches() {
+            fetch('/recent-searches')
+                .then(response => response.json())
+                .then(data => {
+                    const dropdown = document.getElementById('recent-searches');
+                    dropdown.innerHTML = ''; // Clear previous entries
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    // Populate the dropdown
+                    data.forEach(city => {
+                        const item = document.createElement('div');
+                        item.textContent = city;
+                        item.onclick = () => selectSearch(city); // Set city on click
+                        dropdown.appendChild(item);
+                    });
+                    dropdown.style.display = 'block'; // Show the dropdown
+                })
+                .catch(error => console.error('Error fetching recent searches:', error));
+        }
+
+        // Set the selected city to the input field and hide the dropdown
+        function selectSearch(city) {
+            document.getElementById('city').value = city;
+            document.getElementById('recent-searches').style.display = 'none';
+        }
+
+        // Hide the dropdown if clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('recent-searches');
+            const input = document.getElementById('city');
+            if (!dropdown.contains(e.target) && e.target !== input) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Add a search function
+        function searchCity() {
+            const city = document.getElementById('city').value;
+            if (!city) {
+                alert('Please enter a city name.');
+                return;
+            }
+
+            // Fetch weather data
+            fetch('/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ city: city })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Update the map
+                const { lat, lon, weather, temperature, icon, humidity, hourly_forecast, six_day_forecast } = data;
+                map.setView([lat, lon], 10); // Zoom into the city
+                L.marker([lat, lon])
+                    .addTo(map)
+                    .bindPopup(`<b>${city}</b><br>${weather}<br>Temperature: ${temperature}°C`)
+                    .openPopup();
+
+                // Update weather details
+                document.getElementById('weather-description').innerText = `Weather: ${weather}`;
+                document.getElementById('temperature').innerText = `Temperature: ${temperature}°C`;
+                document.getElementById('humidity').innerText = `Humidity: ${humidity}%`;
+
+                // Update hourly forecast
+                const hourlyForecastDiv = document.getElementById('hourly-forecast');
+                hourlyForecastDiv.innerHTML = '<h3>Hourly Forecast</h3>';
+                hourly_forecast.forEach(f => {
+                    hourlyForecastDiv.innerHTML += `
+                        <div class="forecast">
+                            <img src="https://openweathermap.org/img/wn/${f.icon}@4x.png" alt="Weather Icon" />
+                            <span>${f.time}: ${f.temp}°C</span>
+                        </div>`;
+                });
+
+                // Update 6-day forecast
+                const sixDayForecastDiv = document.getElementById('six-day-forecast');
+                sixDayForecastDiv.innerHTML = '<h3>6-Day Forecast</h3>';
+                six_day_forecast.forEach(f => {
+                    sixDayForecastDiv.innerHTML += `
+                        <div class="forecast">
+                            <img src="https://openweathermap.org/img/wn/${f.icon}@4x.png" alt="Weather Icon" />
+                            <span>${f.date}: ${f.avg_temp.toFixed(1)}°C</span>
+                        </div>`;
+                });
+            })
+            .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>

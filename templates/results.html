@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Results</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Results for {{ data['city']['name'] }}</h1>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% else %}
+            <div class="weather-info">
+                <p><strong>Temperature:</strong> {{ data['list'][0]['main']['temp'] }}°C</p>
+                <p><strong>Weather:</strong> {{ data['list'][0]['weather'][0]['description'].capitalize() }}</p>
+                <p><strong>Humidity:</strong> {{ data['list'][0]['main']['humidity'] }}%</p>
+                <p><strong>Wind Speed:</strong> {{ data['list'][0]['wind']['speed'] }} m/s</p>
+            </div>
+
+            <h2>Temperature Trend</h2>
+            <img src="/static/temperature.png" alt="Weather Chart">
+
+            <h2>Map</h2>
+            <a href="/map" target="_blank">View Weather Map</a>
+        {% endif %}
+    </div>
+</body>
+</html>
+
