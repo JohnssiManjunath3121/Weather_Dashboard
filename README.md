@@ -15,7 +15,6 @@ This Weather Dashboard is a web application that provides real-time weather upda
 ### Backend:
 - Flask (Python Framework)
 - SQLite (Database)
-- SQLAlchemy (ORM for database management)
 - Requests (Fetching weather data from OpenWeatherMap API)
 - Logging (Error handling and debugging)
 
@@ -23,7 +22,6 @@ This Weather Dashboard is a web application that provides real-time weather upda
 - HTML, CSS (For structuring and styling)
 - JavaScript (For interactivity and AJAX requests)
 - Leaflet.js (For rendering interactive maps)
-- Bootstrap (For responsive design)
 
 ## Project Structure
 ```
