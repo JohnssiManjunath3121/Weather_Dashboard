@@ -45,7 +45,8 @@ Weather_Dashboard/
 ## Installation & Setup
 ### Clone the Repository
 ```sh
- git clone https://github.com/JohnssiManjunath3121/Weather_Dashboard
+ git clone https://github.com/JohnssiManjunath3121/Weather_Dashboard.git   
+ cd Weather_Dashboard
 ```
 
 ### Create a Virtual Environment (Optional but Recommended)
